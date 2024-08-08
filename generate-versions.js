@@ -5,7 +5,7 @@ const docsDir = path.join(__dirname, 'docs');
 const files = fs.readdirSync(docsDir);
 
 const versions = files
-    .filter(file => file.endsWith('.json'))
+    .filter(file => file.endsWith('.json') && file !== 'versions.json')
     .map(file => path.basename(file, '.json'));
 
 const versionsJson = { versions };
