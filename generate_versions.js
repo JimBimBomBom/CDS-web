@@ -11,3 +11,4 @@ const versions = files
 const versionsJson = { versions };
 
 fs.writeFileSync(path.join(docsDir, 'versions.json'), JSON.stringify(versionsJson, null, 2));
+console.log('Generated versions.json with versions:', versions);
