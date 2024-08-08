@@ -32,9 +32,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load versions from versions.json
     fetch('docs/versions.json')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to load versions.json: ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
             const versions = data.versions;
+
+            if (versions.length === 0) {
+                throw new Error('No versions available in versions.json');
+            }
 
             // Populate the select element
             versions.forEach(version => {
@@ -46,9 +55,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Load the first version by default
             loadSwagger(versions[0]);
+        })
+        .catch(error => {
+            console.error('Error loading versions:', error);
+            alert('Failed to load API versions. Please check the console for more details.');
         });
 
     function loadSwagger(version) {
+        if (!version) {
+            console.error('Version is undefined, cannot load Swagger JSON');
+            return;
+        }
+
         const url = `docs/${version}.json`;
 
         SwaggerUIBundle({
