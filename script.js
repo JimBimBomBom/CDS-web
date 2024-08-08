@@ -26,3 +26,44 @@ document.getElementById('searchBtn').addEventListener('click', function() {
         document.getElementById('result').innerText = 'An error occurred. Please try again later.';
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const versionSelect = document.getElementById('versionSelect');
+
+    // Load versions from versions.json
+    fetch('docs/versions.json')
+        .then(response => response.json())
+        .then(data => {
+            const versions = data.versions;
+
+            // Populate the select element
+            versions.forEach(version => {
+                const option = document.createElement('option');
+                option.value = version;
+                option.textContent = version;
+                versionSelect.appendChild(option);
+            });
+
+            // Load the first version by default
+            loadSwagger(versions[0]);
+        });
+
+    function loadSwagger(version) {
+        const url = `docs/${version}.json`;
+
+        SwaggerUIBundle({
+            url: url,
+            dom_id: '#swagger-ui',
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIStandalonePreset
+            ],
+            layout: "BaseLayout"
+        });
+    }
+
+    // Listen for version changes
+    versionSelect.addEventListener('change', function() {
+        loadSwagger(this.value);
+    });
+});
