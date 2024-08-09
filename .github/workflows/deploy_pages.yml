@@ -22,13 +22,13 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}  # GitHub token is automatically available
-        publish_dir: ./public  # Adjust to your build output directory
-        personal_token: ${{ secrets.AUTH_USERNAME }}:${{ secrets.AUTH_PASSWORD }}  # If you need to push using a username and password (not recommended for public repos)
+        publish_dir: ./  # Adjust to your build output directory
+        personal_token: $"${{ secrets.AUTH_USERNAME }}:${{ secrets.AUTH_PASSWORD }}"  # If you need to push using a username and password (not recommended for public repos)
         
-    - name: Invalidate GitHub Pages cache
-      uses: actions/cache@v3
-      with:
-        path: ./public  # Adjust this path to your actual build output
-        key: ${{ runner.os }}-site-cache
-        restore-keys: |
-          ${{ runner.os }}-site-cache
+    # - name: Invalidate GitHub Pages cache
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ./public  # Adjust this path to your actual build output
+    #     key: ${{ runner.os }}-site-cache
+    #     restore-keys: |
+    #       ${{ runner.os }}-site-cache
