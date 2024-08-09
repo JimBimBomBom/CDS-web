@@ -4,11 +4,16 @@ document.getElementById('searchBtn').addEventListener('click', function() {
 
     console.log('Sending request to the server with:', { City1: city1, City2: city2 });
 
+    const username = process.env.AUTH_USERNAME;
+    const password = process.env.AUTH_PASSWORD;
+    const credential = btoa(`${username}:${password}`);
+
     fetch('https://citydistanceservice-app-v6cgvtuw4a-uc.a.run.app/distance', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Connection': 'keep-alive'
+            'Connection': 'keep-alive',
+            'Authorization': `Basic ${credential}`
         },
         body: JSON.stringify({ City1: city1, City2: city2 })
     })
