@@ -21,7 +21,7 @@ jobs:
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}  # GitHub token is automatically available
+        github_token: ${{ secrets.TOKEN }}  # GitHub token is automatically available
         publish_dir: ./  # Adjust to your build output directory
         personal_token: $"${{ secrets.AUTH_USERNAME }}:${{ secrets.AUTH_PASSWORD }}"  # If you need to push using a username and password (not recommended for public repos)
         
