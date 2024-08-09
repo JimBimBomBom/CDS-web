@@ -1,0 +1,40 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Deploy on push to the main branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build the site
+      run: npm run build # Adjust this to your actual build command
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}  # GitHub token is automatically available
+        publish_dir: ./public  # Adjust to your build output directory
+        personal_token: ${{ secrets.AUTH_USERNAME }}:${{ secrets.AUTH_PASSWORD }}  # If you need to push using a username and password (not recommended for public repos)
+        
+    - name: Invalidate GitHub Pages cache
+      uses: actions/cache@v3
+      with:
+        path: ./public  # Adjust this path to your actual build output
+        key: ${{ runner.os }}-site-cache
+        restore-keys: |
+          ${{ runner.os }}-site-cache
