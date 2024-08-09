@@ -18,9 +18,6 @@ jobs:
       with:
         node-version: '16'
 
-    - name: Build the site
-      run: npm run build # Adjust this to your actual build command
-
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
