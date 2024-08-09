@@ -23,7 +23,9 @@ jobs:
       with:
         github_token: ${{ secrets.TOKEN }}  # GitHub token is automatically available
         publish_dir: ./  # Adjust to your build output directory
-        personal_token: $"${{ secrets.AUTH_USERNAME }}:${{ secrets.AUTH_PASSWORD }}"  # If you need to push using a username and password (not recommended for public repos)
+      env:
+        auth_username: ${{ secrets.AUTH_USERNAME }}  # Username for the deploy key
+        auth_password: ${{ secrets.AUTH_PASSWORD }}  # Password for the deploy key
         
     # - name: Invalidate GitHub Pages cache
     #   uses: actions/cache@v3
