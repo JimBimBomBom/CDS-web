@@ -18,14 +18,18 @@ jobs:
       with:
         node-version: '16'
 
+    - name: Build the site
+      run: |
+        echo "Injecting environment variables"
+        sed -i 's|__AUTH_USERNAME__|'${{ secrets.AUTH_USERNAME }}'|g' script.js
+        sed -i 's|__AUTH_PASSWORD|'${{ secrets.AUTH_PASSWORD }}'|g' script.js
+        npm run build
+
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
-        github_token: ${{ secrets.TOKEN }}  # GitHub token is automatically available
+        github_token: ${{ secrets.GITHUB_TOKEN }}  # GitHub token is automatically available
         publish_dir: ./  # Adjust to your build output directory
-      env:
-        auth_username: ${{ secrets.AUTH_USERNAME }}  # Username for the deploy key
-        auth_password: ${{ secrets.AUTH_PASSWORD }}  # Password for the deploy key
         
     # - name: Invalidate GitHub Pages cache
     #   uses: actions/cache@v3
