@@ -23,7 +23,6 @@ jobs:
         echo "Injecting environment variables"
         sed -i 's|__AUTH_USERNAME__|'${{ secrets.AUTH_USERNAME }}'|g' script.js
         sed -i 's|__AUTH_PASSWORD|'${{ secrets.AUTH_PASSWORD }}'|g' script.js
-        npm run build
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
