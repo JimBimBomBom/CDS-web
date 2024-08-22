@@ -9,7 +9,6 @@ document.getElementById('searchBtn').addEventListener('click', function() {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Connection': 'keep-alive',
         },
         body: JSON.stringify({ City1: city1, City2: city2 })
     })
