@@ -7,6 +7,7 @@ document.getElementById('searchBtn').addEventListener('click', function() {
     fetch('https://citydistanceservice-app-v6cgvtuw4a-uc.a.run.app/distance', {
         method: 'POST',
         headers: {
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
             'Connection': 'keep-alive',
         },
