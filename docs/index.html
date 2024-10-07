@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Distance Service Client</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        input, button { margin: 10px 0; padding: 5px; }
+        #errorMessage { color: red; }
+    </style>
+</head>
+<body>
+    <div id="urlInput">
+        <h1>Welcome to the City Distance Service Client</h1>
+        <p>Please enter the base URL of the service you want to communicate with:</p>
+        <input type="text" id="baseUrl" placeholder="https://your-service-url.com">
+        <button id="submitUrl">Submit</button>
+        <p id="errorMessage"></p>
+    </div>
+
+    <div id="apiSelection" style="display: none;">
+        <h1>Select an API endpoint</h1>
+        <button id="distanceApi">Distance API</button>
+        <!-- Add more API buttons here as needed -->
+    </div>
+
+    <div id="distanceCalculator" style="display: none;">
+        <h1>Calculate Distance Between Cities</h1>
+        <input type="text" id="city1" placeholder="Enter first city">
+        <input type="text" id="city2" placeholder="Enter second city">
+        <button id="calculateDistance">Calculate Distance</button>
+        <p id="result"></p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
