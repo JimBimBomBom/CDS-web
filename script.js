@@ -4,7 +4,7 @@ document.getElementById('searchBtn').addEventListener('click', function() {
 
     console.log('Sending request to the server with:', { City1: city1, City2: city2 });
 
-    fetch('188.167.157.174:8080/distance', {
+    fetch('http://188.167.157.174:8080/distance', {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
