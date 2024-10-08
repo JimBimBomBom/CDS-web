@@ -4,7 +4,7 @@ document.getElementById('searchBtn').addEventListener('click', function() {
 
     console.log('Sending request to the server with:', { City1: city1, City2: city2 });
 
-    fetch('https://188.167.157.174/distance', {
+    fetch('https://citydistanceservice.duckdns.org/distance', {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
