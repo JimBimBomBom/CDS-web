@@ -3,7 +3,7 @@
  *
  * Lightweight static server for Playwright E2E tests.
  *
- * Reads website/index.html, substitutes __API_BASE__, __AUTH_USERNAME__,
+ * Reads website/index.html, substitutes __AUTH_USERNAME__ and
  * __AUTH_PASSWORD__ placeholders, writes website/.test/index.html, then
  * serves static files from the website/ directory.
  *
@@ -38,13 +38,11 @@ const WEB_ROOT  = path.resolve(__dirname, '..', 'website');
 if (!fs.existsSync(TEST_DIR)) fs.mkdirSync(TEST_DIR, { recursive: true });
 
 let html = fs.readFileSync(SRC_HTML, 'utf8');
-html = html.split('__API_BASE__').join(BASE_URL);
 html = html.split('__AUTH_USERNAME__').join(USERNAME);
 html = html.split('__AUTH_PASSWORD__').join(PASSWORD);
 fs.writeFileSync(HTML_PATH, html, 'utf8');
 
 console.log('[test-server] Wrote website/.test/index.html');
-console.log('[test-server]   API_BASE=' + BASE_URL);
 
 // ── MIME types ──────────────────────────────────────────────────────────────
 

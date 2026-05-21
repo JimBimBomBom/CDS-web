@@ -1,128 +1,21 @@
-# CDS Client
+# City Distance Service — Frontend
 
-Official JavaScript/TypeScript client library for the City Distance Service API.
+A lightweight, static frontend for the City Distance Service.
 
-## Installation
+## Structure
 
-```bash
-npm install @xfilipnamefilip/cds-client
-```
-
-## Quick Start
-
-```typescript
-import CDSClient from '@xfilipnamefilip/cds-client';
-
-const client = new CDSClient({
-  baseURL: 'https://cds2.moojtube.com:8443',  // Flexble URL format
-  username: 'your-username',
-  password: 'your-password',
-  timeout: 30000,  // Optional, default 30s
-  retries: 3,      // Optional, default 3
-});
-
-// Get city suggestions
-const suggestions = await client.getSuggestions('London');
-console.log(suggestions);
-// [
-//   {
-//     id: 'Q84',
-//     name: 'London',
-//     countryCode: 'GB',
-//     country: 'United Kingdom',
-//     adminRegion: 'England',
-//     population: 8799728,
-//     flag: '🇬🇧'
-//   },
-//   ...
-// ]
-
-// Calculate distance
-const distance = await client.calculateDistance('Q84', 'Q90');
-console.log(`Distance: ${distance} km`);
-```
-
-## React Hooks
-
-```typescript
-import { useCitySuggestions, useDistanceCalculation } from '@xfilipnamefilip/cds-client/react-hooks';
-
-function CitySearch() {
-  const { suggestions, loading, error, search } = useCitySuggestions({
-    client,
-    onError: (err) => console.error(err.message),
-  });
-
-  return (
-    <div>
-      <input onChange={(e) => search(e.target.value)} />
-      {loading && <p>Loading...</p>}
-      {error && <p>Error: {error.message}</p>}
-      {suggestions.map(city => (
-        <div key={city.id}>{city.flag} {city.name}</div>
-      ))}
-    </div>
-  );
-}
-```
-
-## Error Handling
-
-```typescript
-try {
-  const suggestions = await client.getSuggestions('Lo');
-} catch (error) {
-  if (error instanceof CDSError) {
-    console.error(`Error ${error.statusCode}: ${error.message}`);
-    // Display user-friendly error message
-  }
-}
-```
-
-## Features
-
-- ✅ Ergonomic URL configuration (auto-adds https://, strips www, etc.)
-- ✅ Built-in authentication support
-- ✅ Automatic retry logic with exponential backoff
-- ✅ TypeScript support
-- ✅ User-friendly error messages
-- ✅ React hooks (optional)
-- ✅ Zero dependencies (except axios)
-
-## API Reference
-
-### `new CDSClient(config)`
-
-Creates a new CDS client instance.
-
-**Config Options:**
-- `baseURL` (required): API base URL (flexible format accepted)
-- `username` (optional): Basic auth username
-- `password` (optional): Basic auth password
-- `timeout` (optional): Request timeout in ms (default: 30000)
-- `retries` (optional): Number of retry attempts (default: 3)
-
-### `getSuggestions(query: string): Promise<CitySuggestion[]>`
-
-Get city suggestions based on partial name.
-
-### `calculateDistance(city1Id: string, city2Id: string): Promise<number>`
-
-Calculate distance between two cities in kilometers.
-
-### `healthCheck(): Promise<boolean>`
-
-Check if the API is accessible.
-
-### `getVersion(): Promise<string>`
-
-Get the API version.
+- `website/` — Static frontend (HTML + ES modules + client-side localization)
+- `tests/` — Playwright E2E tests (mocked backend, no real API required)
+- `scripts/test-server.js` — Lightweight static server used by Playwright
 
 ## Running Tests
 
 Tests use Playwright and mock all API calls — no backend required.
 
 ```bash
+npm install
+npx playwright install
+
 # Run all tests headlessly
 npm run test:e2e
 
@@ -133,6 +26,10 @@ npm run test:e2e:ui
 npm run test:e2e:debug
 ```
 
-## License
+The test server (`scripts/test-server.js`) is started automatically by Playwright's `webServer` config. It substitutes `__AUTH_USERNAME__` and `__AUTH_PASSWORD__` placeholders in `website/index.html` with test credentials, then serves the site.
 
-MIT
+## Notes
+
+- The frontend loads the CDS client library from CDN (`https://cdn.jsdelivr.net/npm/@xfilipnamefilip/cds-client@1.3.0/dist/index.global.js`).
+- All UI text is localized client-side using the static catalogue in `website/js/l10n.js` (21 languages, no backend `/languages` endpoint needed).
+- Language preference is persisted via cookie (`cds_lang`) and falls back to the browser's `navigator.language`.
