@@ -118,8 +118,8 @@ test.describe('City Distance Website', () => {
     await setupMocks(page);
     await page.goto('/');
     await expect(page.locator('h1')).toBeVisible({ timeout: 10000 });
-    // Language list is static client-side; the label should update quickly.
-    await expect(page.locator('#langBtnLabel')).not.toHaveText('Language', { timeout: 20000 });
+    // Language button flag should render quickly.
+    await expect(page.locator('#langBtnFlag')).toBeVisible({ timeout: 20000 });
   });
 
   // ── 1. Page structure ─────────────────────────────────────────────────────
@@ -291,12 +291,15 @@ test.describe('City Distance Website', () => {
       expect(await options.count()).toBe(21);
     });
 
-    test('selecting a language updates the button label to 2-letter code', async ({ page }) => {
+    test('selecting a language updates the button flag', async ({ page }) => {
       await page.locator('#langBtn').click();
       const options = page.locator('.lang-option');
       await expect(options.first()).toBeVisible({ timeout: 5000 });
       await page.locator('.lang-option[data-code="de"]').click();
-      await expect(page.locator('#langBtnLabel')).toContainText('DE');
+      // Flag button should now show a non-empty emoji
+      const flagText = await page.locator('#langBtnFlag').textContent();
+      expect(flagText).toBeTruthy();
+      expect(flagText!.length).toBeGreaterThan(0);
     });
 
     test('selecting a language saves the cds_lang cookie', async ({ page }) => {
@@ -327,12 +330,16 @@ test.describe('City Distance Website', () => {
       const options = page.locator('.lang-option');
       await expect(options.first()).toBeVisible({ timeout: 5000 });
       await page.locator('.lang-option[data-code="fr"]').click();
-      await expect(page.locator('#langBtnLabel')).toContainText('FR');
+      // Verify French is active in dropdown
+      await page.locator('#langBtn').click();
+      await expect(options.first()).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('.lang-option.active')).toHaveAttribute('data-code', 'fr');
 
       await page.reload();
-      await expect(page.locator('#langBtnLabel')).not.toHaveText('Language', { timeout: 20000 });
+      await expect(page.locator('#langBtnFlag')).toBeVisible({ timeout: 20000 });
       // Cookie 'fr' takes priority over browser locale 'en-US'
-      await expect(page.locator('#langBtnLabel')).toContainText('FR');
+      // Verify by checking the page title is in French
+      await expect(page.locator('h1')).toContainText('Calculateur de distance entre villes');
     });
 
   });
@@ -347,13 +354,13 @@ test.describe('City Distance Website', () => {
       test('Slovak UI on first visit', async ({ page }) => {
         // Parent beforeEach already loaded the page in Slovak (no cookie, browser = sk)
         await expect(page.locator('h1')).toContainText('Kalkulačka vzdialenosti miest');
-        await expect(page.locator('#langBtnLabel')).toContainText('SK');
+        await expect(page.locator('#langBtnFlag')).toBeVisible();
         await expect(page.locator('#searchBtn')).toContainText('Vypočítať vzdialenosť');
       });
 
       test('refresh keeps Slovak because browser is still sk-SK', async ({ page }) => {
         await page.reload();
-        await expect(page.locator('#langBtnLabel')).toContainText('SK');
+        await expect(page.locator('#langBtnFlag')).toBeVisible();
         await expect(page.locator('h1')).toContainText('Kalkulačka vzdialenosti miest');
       });
     });
@@ -364,7 +371,7 @@ test.describe('City Distance Website', () => {
       test('falls back to English when no cookie exists', async ({ page }) => {
         // Parent beforeEach loaded page with browser xx (unsupported) + no cookie → EN
         await expect(page.locator('h1')).toContainText('City Distance Calculator');
-        await expect(page.locator('#langBtnLabel')).toContainText('EN');
+        await expect(page.locator('#langBtnFlag')).toBeVisible();
       });
 
       test('uses cookie as fallback when browser locale is unsupported', async ({ page }) => {
@@ -374,18 +381,19 @@ test.describe('City Distance Website', () => {
         ]);
         await page.reload();
         await expect(page.locator('h1')).toContainText('Calculateur de distance entre villes');
-        await expect(page.locator('#langBtnLabel')).toContainText('FR');
+        await expect(page.locator('#langBtnFlag')).toBeVisible();
       });
     });
 
     test('manual selection writes cookie that survives reload', async ({ page }) => {
       // Parent beforeEach loaded page in EN (browser en-US, no cookie)
-      await expect(page.locator('#langBtnLabel')).toContainText('EN');
+      await expect(page.locator('h1')).toContainText('City Distance Calculator');
+      await expect(page.locator('#langBtnFlag')).toBeVisible();
 
       // User selects French
       await page.locator('#langBtn').click();
       await page.locator('.lang-option[data-code="fr"]').click();
-      await expect(page.locator('#langBtnLabel')).toContainText('FR');
+      await expect(page.locator('h1')).toContainText('Calculateur de distance entre villes');
 
       // Cookie is set to 'fr'
       let cookies = await page.context().cookies();
@@ -394,7 +402,7 @@ test.describe('City Distance Website', () => {
 
       // Reload — cookie 'fr' wins over browser locale 'en-US'
       await page.reload();
-      await expect(page.locator('#langBtnLabel')).toContainText('FR');
+      await expect(page.locator('h1')).toContainText('Calculateur de distance entre villes');
 
       // Cookie is still 'fr'
       cookies = await page.context().cookies();
