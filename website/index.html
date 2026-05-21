@@ -78,6 +78,7 @@
         .topbar-btn:hover { border-color: var(--accent); color: var(--accent); }
         .topbar-btn:disabled { opacity: .4; cursor: not-allowed; }
         .topbar-btn .chevron { font-size: 9px; opacity: .5; }
+        #langBtn { min-width: 56px; justify-content: center; }
 
         /* Title */
         .title { text-align: center; margin-bottom: 28px; }
@@ -215,7 +216,6 @@
     <div class="topbar">
         <div class="lang-wrapper">
             <button class="topbar-btn" id="langBtn" aria-label="Select language">
-                <span class="lang-flag" id="langBtnFlag"></span>
                 <span id="langBtnLabel">Language</span>
                 <span class="chevron">&#9662;</span>
             </button>
@@ -369,7 +369,6 @@ function chooseLang(l) {
     client.setLanguage(l.code);
     currentLangCode = l.code;
     setLanguage(l.code);
-    document.getElementById('langBtnFlag').textContent = getLangFlag(l);
     document.getElementById('langBtnLabel').textContent = l.code.split('-')[0].toUpperCase();
     closeLang();
 }
