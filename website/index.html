@@ -508,6 +508,7 @@ function renderSug(cities, sug, inp, chip, key) {
                 sug.classList.remove('active');
                 return;
             }
+            clr();
             state[key] = c;
             inp.value = c.name;
             sug.classList.remove('active');
