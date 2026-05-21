@@ -611,7 +611,7 @@ export function getLangFlag(lang) {
   return toFlagEmoji(lang.countryCode) || '🏳️';
 }
 
-/** Resolve the best initial language from cookie or browser preference */
+/** Resolve the best initial language (saved cookie first, then browser, then en) */
 export function resolveInitialLanguage() {
   const cookie = getCookie('cds_lang');
   if (cookie && LANGUAGES.some(l => l.code === cookie)) {

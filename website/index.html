@@ -370,7 +370,7 @@ function chooseLang(l) {
     currentLangCode = l.code;
     setLanguage(l.code);
     document.getElementById('langBtnFlag').textContent = getLangFlag(l);
-    document.getElementById('langBtnLabel').textContent = l.name;
+    document.getElementById('langBtnLabel').textContent = l.code.split('-')[0].toUpperCase();
     closeLang();
 }
 

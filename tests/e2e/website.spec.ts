@@ -291,14 +291,12 @@ test.describe('City Distance Website', () => {
       expect(await options.count()).toBe(21);
     });
 
-    test('selecting a language updates the button label', async ({ page }) => {
+    test('selecting a language updates the button label to 2-letter code', async ({ page }) => {
       await page.locator('#langBtn').click();
       const options = page.locator('.lang-option');
       await expect(options.first()).toBeVisible({ timeout: 5000 });
-      const target = page.locator('.lang-option[data-code="de"]');
-      const langName = await target.locator('span:last-child').textContent();
-      await target.click();
-      await expect(page.locator('#langBtnLabel')).toContainText(langName!.trim());
+      await page.locator('.lang-option[data-code="de"]').click();
+      await expect(page.locator('#langBtnLabel')).toContainText('DE');
     });
 
     test('selecting a language saves the cds_lang cookie', async ({ page }) => {
@@ -323,17 +321,85 @@ test.describe('City Distance Website', () => {
       expect(await page.locator('.lang-option.active').count()).toBeGreaterThan(0);
     });
 
-    test('language cookie persists after page reload', async ({ page }) => {
+    test('selected language persists after page reload via cookie', async ({ page }) => {
       // Select French
       await page.locator('#langBtn').click();
       const options = page.locator('.lang-option');
       await expect(options.first()).toBeVisible({ timeout: 5000 });
       await page.locator('.lang-option[data-code="fr"]').click();
-      await expect(page.locator('#langBtnLabel')).toContainText('Français');
+      await expect(page.locator('#langBtnLabel')).toContainText('FR');
 
       await page.reload();
       await expect(page.locator('#langBtnLabel')).not.toHaveText('Language', { timeout: 20000 });
-      await expect(page.locator('#langBtnLabel')).toContainText('Français');
+      // Cookie 'fr' takes priority over browser locale 'en-US'
+      await expect(page.locator('#langBtnLabel')).toContainText('FR');
+    });
+
+  });
+
+  // ── 4b. Language initialization ──────────────────────────────────────────
+
+  test.describe('Language initialization', () => {
+
+    test.describe('Browser locale sk-SK', () => {
+      test.use({ locale: 'sk-SK' });
+
+      test('Slovak UI on first visit', async ({ page }) => {
+        // Parent beforeEach already loaded the page in Slovak (no cookie, browser = sk)
+        await expect(page.locator('h1')).toContainText('Kalkulačka vzdialenosti miest');
+        await expect(page.locator('#langBtnLabel')).toContainText('SK');
+        await expect(page.locator('#searchBtn')).toContainText('Vypočítať vzdialenosť');
+      });
+
+      test('refresh keeps Slovak because browser is still sk-SK', async ({ page }) => {
+        await page.reload();
+        await expect(page.locator('#langBtnLabel')).toContainText('SK');
+        await expect(page.locator('h1')).toContainText('Kalkulačka vzdialenosti miest');
+      });
+    });
+
+    test.describe('Unsupported browser locale xx-XX', () => {
+      test.use({ locale: 'xx-XX' });
+
+      test('falls back to English when no cookie exists', async ({ page }) => {
+        // Parent beforeEach loaded page with browser xx (unsupported) + no cookie → EN
+        await expect(page.locator('h1')).toContainText('City Distance Calculator');
+        await expect(page.locator('#langBtnLabel')).toContainText('EN');
+      });
+
+      test('uses cookie as fallback when browser locale is unsupported', async ({ page }) => {
+        // Parent beforeEach loaded page in EN. Add FR cookie and reload.
+        await page.context().addCookies([
+          { name: 'cds_lang', value: 'fr', path: '/', domain: 'localhost' },
+        ]);
+        await page.reload();
+        await expect(page.locator('h1')).toContainText('Calculateur de distance entre villes');
+        await expect(page.locator('#langBtnLabel')).toContainText('FR');
+      });
+    });
+
+    test('manual selection writes cookie that survives reload', async ({ page }) => {
+      // Parent beforeEach loaded page in EN (browser en-US, no cookie)
+      await expect(page.locator('#langBtnLabel')).toContainText('EN');
+
+      // User selects French
+      await page.locator('#langBtn').click();
+      await page.locator('.lang-option[data-code="fr"]').click();
+      await expect(page.locator('#langBtnLabel')).toContainText('FR');
+
+      // Cookie is set to 'fr'
+      let cookies = await page.context().cookies();
+      let langCookie = cookies.find(c => c.name === 'cds_lang');
+      expect(langCookie?.value).toBe('fr');
+
+      // Reload — cookie 'fr' wins over browser locale 'en-US'
+      await page.reload();
+      await expect(page.locator('#langBtnLabel')).toContainText('FR');
+
+      // Cookie is still 'fr'
+      cookies = await page.context().cookies();
+      langCookie = cookies.find(c => c.name === 'cds_lang');
+      expect(langCookie?.value).toBe('fr');
     });
 
   });
