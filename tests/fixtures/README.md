@@ -5,7 +5,6 @@ This directory contains test data for the CDS backend. These fixtures help the b
 ## Structure
 
 - `cities.json` - Sample city data for suggestions endpoint
-- `languages.json` - Sample language configurations
 - `README.md` - This file
 
 ## How to Use
@@ -28,26 +27,6 @@ This directory contains test data for the CDS backend. These fixtures help the b
       "adminRegion": "New York",
       "population": 8405837,
       "flag": "US"
-    }
-  ]
-}
-```
-
-### languages.json
-```json
-{
-  "languages": [
-    {
-      "code": "en",
-      "name": "English",
-      "flag": "GB",
-      "countryCode": "GB"
-    },
-    {
-      "code": "de",
-      "name": "German",
-      "flag": "DE",
-      "countryCode": "DE"
     }
   ]
 }

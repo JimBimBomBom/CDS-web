@@ -1,5 +1,4 @@
 import { test, expect, Page } from '@playwright/test';
-import LANGUAGES from '../fixtures/languages.json';
 import CITIES from '../fixtures/cities.json';
 
 // ---------------------------------------------------------------------------
@@ -18,20 +17,11 @@ const MOCK_DISTANCE_KM = 5570;
 // ---------------------------------------------------------------------------
 
 /**
- * Register Playwright route mocks for all three API endpoints.
- * Must be called before page.goto() so the mocks are in place for the
- * initial page load (which triggers /languages immediately).
+ * Register Playwright route mocks for the two API endpoints still used
+ * by the client (/suggestions and /distance).  The /languages endpoint
+ * has been removed — the website now loads its language catalogue client-side.
  */
 async function setupMocks(page: Page) {
-  // /languages — return fixture list instantly
-  await page.route('**/languages', route =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(LANGUAGES),
-    })
-  );
-
   // /suggestions?q=X — prefix-filter the cities fixture
   await page.route('**/suggestions*', route => {
     const q = new URL(route.request().url()).searchParams.get('q')?.toLowerCase() ?? '';
@@ -125,13 +115,10 @@ async function calculate(page: Page, city1Query: string, city2Query: string) {
 test.describe('City Distance Website', () => {
 
   test.beforeEach(async ({ page }) => {
-    // Mocks must be registered before goto() so /languages is intercepted
-    // on the initial page load (the app calls it immediately on startup).
     await setupMocks(page);
     await page.goto('/');
     await expect(page.locator('h1')).toBeVisible({ timeout: 10000 });
-    // The mock responds instantly; this wait confirms the CDS library has
-    // loaded from CDN and chooseLang() has been called with mock data.
+    // Language list is static client-side; the label should update quickly.
     await expect(page.locator('#langBtnLabel')).not.toHaveText('Language', { timeout: 20000 });
   });
 
@@ -296,19 +283,19 @@ test.describe('City Distance Website', () => {
       await expect(page.locator('#langDropdown')).not.toHaveClass(/open/);
     });
 
-    test('language dropdown shows all mock languages', async ({ page }) => {
+    test('language dropdown shows all static languages', async ({ page }) => {
       await page.locator('#langBtn').click();
       const options = page.locator('.lang-option');
       await expect(options.first()).toBeVisible({ timeout: 5000 });
-      // Fixture has 6 languages
-      expect(await options.count()).toBe(LANGUAGES.length);
+      // Static catalogue has 21 languages
+      expect(await options.count()).toBe(21);
     });
 
     test('selecting a language updates the button label', async ({ page }) => {
       await page.locator('#langBtn').click();
       const options = page.locator('.lang-option');
       await expect(options.first()).toBeVisible({ timeout: 5000 });
-      const target = options.nth(2); // German
+      const target = page.locator('.lang-option[data-code="de"]');
       const langName = await target.locator('span:last-child').textContent();
       await target.click();
       await expect(page.locator('#langBtnLabel')).toContainText(langName!.trim());
@@ -318,7 +305,7 @@ test.describe('City Distance Website', () => {
       await page.locator('#langBtn').click();
       const options = page.locator('.lang-option');
       await expect(options.first()).toBeVisible({ timeout: 5000 });
-      await options.nth(2).click();
+      await page.locator('.lang-option[data-code="de"]').click();
       const cookies = await page.context().cookies();
       const langCookie = cookies.find(c => c.name === 'cds_lang');
       expect(langCookie).toBeTruthy();
@@ -329,7 +316,7 @@ test.describe('City Distance Website', () => {
       await page.locator('#langBtn').click();
       const options = page.locator('.lang-option');
       await expect(options.first()).toBeVisible({ timeout: 5000 });
-      await options.nth(2).click();
+      await page.locator('.lang-option[data-code="de"]').click();
       // Re-open and verify active class persists
       await page.locator('#langBtn').click();
       await expect(options.first()).toBeVisible({ timeout: 5000 });
@@ -342,11 +329,11 @@ test.describe('City Distance Website', () => {
       const options = page.locator('.lang-option');
       await expect(options.first()).toBeVisible({ timeout: 5000 });
       await page.locator('.lang-option[data-code="fr"]').click();
-      await expect(page.locator('#langBtnLabel')).toContainText('French');
+      await expect(page.locator('#langBtnLabel')).toContainText('Français');
 
       await page.reload();
       await expect(page.locator('#langBtnLabel')).not.toHaveText('Language', { timeout: 20000 });
-      await expect(page.locator('#langBtnLabel')).toContainText('French');
+      await expect(page.locator('#langBtnLabel')).toContainText('Français');
     });
 
   });
@@ -538,7 +525,7 @@ test.describe('City Distance Website', () => {
       await searchAndSelectCity(page, '#city1', '#suggestions1', 'London');
       await searchAndSelectCity(page, '#city2', '#suggestions2', 'Paris');
       await Promise.all([
-        page.waitForResponse(res => res.url().includes('/distance'), { timeout: 10000 }),
+        page.waitForResponse(res => res.url().includes('/distance') && res.status() === 200, { timeout: 10000 }),
         page.locator('#searchBtn').click(),
       ]);
       await expect(page.locator('#loading')).not.toHaveClass(/show/, { timeout: 5000 });
@@ -561,10 +548,10 @@ test.describe('City Distance Website', () => {
       expect(val).toBeGreaterThan(0);
     });
 
-    test('result cities panel shows both selected city names', async ({ page }) => {
+    test('result text shows both selected city names', async ({ page }) => {
       const { name1, name2 } = await calculate(page, 'London', 'Paris');
-      await expect(page.locator('#resultCities')).toContainText(name1);
-      await expect(page.locator('#resultCities')).toContainText(name2);
+      await expect(page.locator('#resultDistance')).toContainText(name1);
+      await expect(page.locator('#resultDistance')).toContainText(name2);
     });
 
     test('calculate button is re-enabled after calculation', async ({ page }) => {
@@ -582,8 +569,8 @@ test.describe('City Distance Website', () => {
       await calculate(page, 'Tokyo', 'Seoul');
 
       // Result must show the new city names, not the old ones
-      await expect(page.locator('#resultCities')).not.toContainText('London');
-      await expect(page.locator('#resultCities')).toContainText('Tokyo');
+      await expect(page.locator('#resultDistance')).not.toContainText('London');
+      await expect(page.locator('#resultDistance')).toContainText('Tokyo');
     });
 
   });
@@ -608,14 +595,14 @@ test.describe('City Distance Website', () => {
 
     test('Berlin to Vienna — result panel shows both city names', async ({ page }) => {
       const { name1, name2 } = await calculate(page, 'Berlin', 'Vienna');
-      await expect(page.locator('#resultCities')).toContainText(name1);
-      await expect(page.locator('#resultCities')).toContainText(name2);
+      await expect(page.locator('#resultDistance')).toContainText(name1);
+      await expect(page.locator('#resultDistance')).toContainText(name2);
     });
 
     test('Mumbai to São Paulo — result panel shows both city names', async ({ page }) => {
       const { name1, name2 } = await calculate(page, 'Mumbai', 'São Paulo');
-      await expect(page.locator('#resultCities')).toContainText(name1);
-      await expect(page.locator('#resultCities')).toContainText(name2);
+      await expect(page.locator('#resultDistance')).toContainText(name1);
+      await expect(page.locator('#resultDistance')).toContainText(name2);
     });
 
   });

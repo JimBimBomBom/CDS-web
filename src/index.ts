@@ -12,13 +12,6 @@ export interface CDSClientConfig {
   retries?: number;
 }
 
-export interface Language {
-  code: string;
-  name: string;
-  flag?: string;
-  countryCode?: string;
-}
-
 export interface CitySuggestion {
   id: string;
   name: string;
@@ -122,15 +115,6 @@ export class CDSClient {
       }
     }
     throw lastError;
-  }
-
-  /** Fetch supported languages from the backend */
-  async getLanguages(): Promise<Language[]> {
-    const res = await this.request(`${this.baseURL}/languages`, {
-      headers: this.buildHeaders(),
-    });
-    const body = await res.json();
-    return Array.isArray(body) ? body : (body.data || []);
   }
 
   /** Get city suggestions for a partial query (min 2 chars) */
